@@ -14,7 +14,8 @@ WORKDIR /app
 
 COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt \
+    -i https://mirrors.aliyun.com/pypi/simple/
 
 RUN rm requirements.txt
 
