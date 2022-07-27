@@ -1,12 +1,8 @@
-FROM python:3.9 as requirements-stage
+FROM acidrain/python-poetry:3.9 as requirements-stage
 
 WORKDIR /tmp
 
 COPY ./pyproject.toml ./poetry.lock* /tmp/
-
-RUN curl -sSL https://install.python-poetry.org -o install-poetry.py
-
-RUN python install-poetry.py --yes
 
 ENV PATH="${PATH}:/root/.local/bin"
 
