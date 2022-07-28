@@ -2,8 +2,9 @@ import nonebot
 from nonebot.plugin import PluginMetadata
 from nonebot.log import logger
 
+import uvicorn
+from urllib.parse import parse_qs
 from pydantic import BaseModel, Extra
-from flask import Flask, request
 from threading import Thread
 
 __plugin_meta__ = PluginMetadata(
@@ -20,30 +21,36 @@ class Config(BaseModel, extra=Extra.ignore):
 config = Config.parse_obj(nonebot.get_driver().config)
 
 
-app = Flask(__name__)
+async def app(scope, receive, send):
+    q = parse_qs(scope['query_string'].decode())
+    try:
+        token = q['token'][0]
 
-@app.route('/')
-async def report():
-    token = request.args.get('token')
-    if token is None or token != config.report_token:
-        return 'bad token', 401
+        if token is None or token != config.report_token:
+            code = 403 # Unauthorized
+        else:
+            title = q['title'][0]
+            content = q['content'][0]
+            msg = f'[report] {title or ""}\n{content}'
 
-    title = request.args.get('title')
-    msg = request.args.get('msg')
-    text = f'[report] {title or ""}\n{msg}'    
+            bot = nonebot.get_bot()
+            await bot.send_msg(
+                message=msg,
+                user_id='1580422201'
+            )
+            code = 200 # Ok
+    except (KeyError, IndexError):
+        code = 400 # Bad Request
 
-    bot = nonebot.get_bot()
-    await bot.send_msg(
-        message=text,
-        user_id='1580422201'
-    )
-    return 'ok', 200
+    await send({
+        'type': 'http.response.start',
+        'status': code
+    })
 
 
 def main():
-    app.run(host='0.0.0.0', port=8081,  debug=False)
+    uvicorn.run(app, host='0.0.0.0', port=8081)
 
 
 if config.environment == 'prod':
     Thread(target=main, daemon=True).start()
-
