@@ -41,7 +41,7 @@ async def report():
 
 
 def main():
-    app.run(host='localhost', port=8081,  debug=False)
+    app.run(host='0.0.0.0', port=8081,  debug=False)
 
 
 if config.environment == 'prod':
