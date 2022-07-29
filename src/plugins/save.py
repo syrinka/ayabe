@@ -3,6 +3,8 @@ from nonebot.log import logger
 from nonebot.params import Received
 from nonebot.adapters.onebot.v11 import PRIVATE_FRIEND
 
+import requests as rq
+
 m = on_command('extract', permission=PRIVATE_FRIEND)
 m.__help_name__ = 'extract'
 m.__doc__ = '''
@@ -20,6 +22,17 @@ def resolve(data):
                 urls.append(node['data']['url'])
     
     return urls
+
+
+def upload(urls) -> str:
+    UPLOAD = 'https://transfer.sh'
+    headers = {
+        'Max-Days': 1,
+        'Max-Downloads': 1
+    }
+    files = {'link.txt', ' '.join(urls)}
+    url = rq.post(UPLOAD, files=files, headers=headers).text
+    return url
 
 
 @m.handle()
@@ -48,4 +61,4 @@ async def save(e = Received('e')):
         await m.finish('未能提取到链接！')
     else:
         await m.send(f'提取完毕，计 {len(urls)} 条链接')
-        await m.finish('\n'.join(urls))
+        await m.finish(upload(urls))
