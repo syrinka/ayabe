@@ -27,8 +27,8 @@ def resolve(data):
 def upload(urls) -> str:
     UPLOAD = 'https://transfer.sh'
     headers = {
-        'Max-Days': 1,
-        'Max-Downloads': 1
+        'Max-Days': '1',
+        'Max-Downloads': '1'
     }
     files = {'link.txt', ' '.join(urls)}
     url = rq.post(UPLOAD, files=files, headers=headers).text
