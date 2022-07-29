@@ -30,7 +30,7 @@ def upload(urls) -> str:
         'Max-Days': '1',
         'Max-Downloads': '1'
     }
-    files = {'link.txt', ' '.join(urls)}
+    files = {'link.txt': '\n'.join(urls)}
     url = rq.post(UPLOAD, files=files, headers=headers).text
     return url
 
