@@ -31,8 +31,8 @@ def upload(urls) -> str:
         'Max-Downloads': '1'
     }
     files = {'link.txt': '\n'.join(urls)}
-    url = rq.post(UPLOAD, files=files, headers=headers).text
-    return url
+    upload = rq.post(UPLOAD, files=files, headers=headers).text
+    return upload.strip()
 
 
 @m.handle()
