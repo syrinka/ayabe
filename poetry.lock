@@ -332,6 +332,17 @@ nonebot-adapter-onebot = ">=2.0.0-beta.1,<3.0.0"
 nonebot2 = ">=2.0.0-beta.4,<3.0.0"
 
 [[package]]
+name = "nonebot-plugin-report"
+version = "0.1.2"
+description = "Push message to from anywhere to your bot through webhook."
+category = "main"
+optional = false
+python-versions = ">=3.7.3,<4.0.0"
+
+[package.dependencies]
+nonebot2 = ">=2.0.0-beta.4,<3.0.0"
+
+[[package]]
 name = "nonebot2"
 version = "2.0.0b4"
 description = "An asynchronous python bot framework."
@@ -659,7 +670,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "d81c83d9d857cf0d2570a1a44bd4231f8f597307c0ca6b0ca59bc5655d75016b"
+content-hash = "ea49d8b050805d0f54bd200045c2855c96a0b4e025feea8703b47f8ef8d421e1"
 
 [metadata.files]
 anyio = [
@@ -946,6 +957,10 @@ nonebot-plugin-gocqhttp = [
 nonebot-plugin-help = [
     {file = "nonebot-plugin-help-0.3.1.tar.gz", hash = "sha256:6cd19fd1f46588f72c8adf7cd0c5f8c553b9639567a5a41f249e12e5d42f6ed8"},
     {file = "nonebot_plugin_help-0.3.1-py3-none-any.whl", hash = "sha256:b3656d0f0bd86fd377ba3f00a2affca549d3ec130c8d5022d2c46d9bd81f1fed"},
+]
+nonebot-plugin-report = [
+    {file = "nonebot-plugin-report-0.1.2.tar.gz", hash = "sha256:c83643e725bfb3a79335de6981aa68480d9a6895076506515bffd5e140e29bfe"},
+    {file = "nonebot_plugin_report-0.1.2-py3-none-any.whl", hash = "sha256:00cc65314b90585a3bb161eadda1717ce2b27b669a064dcfecee52a6887008ba"},
 ]
 nonebot2 = [
     {file = "nonebot2-2.0.0b4-py3-none-any.whl", hash = "sha256:3029cdb657ec48c6aaa046e1b712e7a0ebe5d0010208dff95b5ccbe461d1ed4e"},
