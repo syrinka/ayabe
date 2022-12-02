@@ -2,9 +2,9 @@ version: "3"
 services:
   # 其他配置参考 https://hub.docker.com/r/tiangolo/uvicorn-gunicorn-fastapi/
   nonebot:
-    image: 
+    image: syrinka/ayabe
     build: .
-    container_name: karenbot
+    container_name: ayabe
     ports:
       # - "8080:8080" # 映射端口到宿主机 宿主机端口:容器端口
       - "8081:8081" # report api
