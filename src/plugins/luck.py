@@ -16,10 +16,10 @@ class Rand(object):
         return min + (self._rand() % (max - min + 1))
 
 
-m = on_command('ys', aliases={'运势','今日运势'})
+m = on_command('ys', aliases={'运势', 'jrrp', '今日人品'})
 m.__help_name__ = 'ys'
 m.__doc__ = '''
-roll 一下今日的运势
+今日的运势
 '''
 
 @m.handle()
@@ -28,8 +28,6 @@ async def luck(e = EventParam()):
     date: str = datetime.now().strftime(r'%Y-%m-%d')
     seed = int.from_bytes((uid + '#' + date).encode(), byteorder='big')
 
-    msg = '今日运势：{}'.format(
-        Rand(seed)(1, 100)
-    )
+    msg = '今日，%d 颗星辰为你闪烁' % Rand(seed)(1, 100)
 
     await m.send(msg)
