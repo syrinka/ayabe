@@ -76,7 +76,7 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
     job = scheduler.add_job(
         callback,
         trigger='date',
-        name='\x00'.join([date, desc]), # 用于获取事件真实时间
+        name='\x00'.join([date_str, desc]), # 用于获取事件真实时间
         args=[desc, date_str, e.get_user_id()],
         run_date=run_date,
     )
@@ -128,8 +128,8 @@ async def memo():
     else:
         msg = '目前有以下的事项：'
 
-        # name = date + '\x00' + desc
+        # name = date_str + '\x00' + desc
         for job in sorted(jobs, key=lambda j: j.name):
-            date, desc = job.name.split('\x00')
-            msg += '\n%s\n · %s' % (date.strftime(r'%m-%d %H:%M'), desc)
+            date_str, desc = job.name.split('\x00')
+            msg += '\n%s\n · %s' % (date_str, desc)
         await m.send(msg)
