@@ -41,14 +41,14 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
     try:
         result = extract_time(msg, time_base=time.time())[0]
     except IndexError:
-        await m.reject('理解不能')
+        await m.finish('理解不能')
 
     if result['type'] == 'time_point':
         span = result['detail']['time']
     elif result['type'] == 'time_period':
         span = result['detail']['time']['point']['time']
     else:
-        await m.reject('未能找到时间点或时间周期\n解析结果为：\ntext: %s\ntype: %s\n请据此调整输入' % (result['text'], result['type']))
+        await m.finish('未能找到时间点或时间周期\n解析结果为：\ntext: %s\ntype: %s\n请据此调整输入' % (result['text'], result['type']))
 
     # 当天
     if span[0].endswith('00:00:00') and span[1].endswith('23:59:59'):
