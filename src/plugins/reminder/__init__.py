@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from nonebot import on_command, require, get_bot, get_driver
 from nonebot.log import logger
-from nonebot.params import CommandArg, Event, Arg, T_State
+from nonebot.params import CommandArg, Event, Arg
 from nonebot.plugin import PluginMetadata
 require('nonebot_plugin_apscheduler')
 from nonebot_plugin_apscheduler import scheduler
@@ -26,6 +26,9 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
+last_added = None
+
+
 driver = get_driver()
 REMIND_DELTA = timedelta(minutes=30)
 
@@ -35,10 +38,10 @@ async def callback(desc, date_str, user_id):
     await bot.send_msg(message=msg, user_id=user_id)
 
 
-m = on_command('remind', aliases={'r'}, block=False)
+m = on_command('remind', aliases={'r'})
 
 @m.handle()
-async def remind(state: T_State, e: Event, msg=CommandArg()):
+async def remind(e: Event, msg=CommandArg()):
     msg = str(msg)
     try:
         result = extract_time(msg, time_base=time.time())[0]
@@ -80,33 +83,36 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
         args=[desc, date_str, e.get_user_id()],
         run_date=run_date,
     )
-    state['job_id'] = job.id
-    state['date'] = date
+    global last_added
+    last_added = (job.id, date)
 
 
-@m.got('before')
-async def remind(state: T_State, msg=Arg('before')):
-    msg = str(msg)
-    if msg[0] in driver.config.command_start:
+m = on_command('ahead')
+
+@m.handle()
+async def ahead(msg=CommandArg()):
+    if last_added is None:
         return
 
+    msg = str(msg)
     try:
-        result = extract_time(str(msg))[0]
+        result = extract_time(msg)[0]
     except IndexError:
         # 无事发生
         return
 
     if result['type'] != 'time_delta':
-        await m.reject('意义不明，若希望更改提醒时间，请描述一个时间差')
+        await m.finish('意义不明，若希望更改提醒时间，请描述一个时间差')
     else:
+        job_id, date = last_added
         # hour -> hours
         delta = timedelta(**{k+'s': v for k, v in result['detail']['time'].items()})
-        new_date = state['date'] - delta
-        scheduler.reschedule_job(state['job_id'], run_date=new_date)
+        new_date = date - delta
+        scheduler.reschedule_job(job_id, run_date=new_date)
         await m.finish('了解，那么将提前到 {} 进行提醒'.format(new_date.strftime(r'%m-%d %H:%M')))
 
 
-m = on_command(('memo', 'clear'), priority=3)
+m = on_command(('memo', 'clear'))
 
 @m.got('sure', '确定吗？这是不可逆的 [y/N]')
 async def clear(sure=Arg('sure')):
@@ -117,7 +123,7 @@ async def clear(sure=Arg('sure')):
         await m.finish('清理完毕')
 
 
-m = on_command('memo', priority=3)
+m = on_command('memo')
 
 @m.handle()
 async def memo():
