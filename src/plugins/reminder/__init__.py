@@ -58,22 +58,28 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
 
     offset = result['offset']
     msg = (msg[:offset[0]] + msg[offset[1]:]).strip(' \r\n\t，。,.、')
+    date_str = date.strftime('%m-%d %H:%M')
 
-    resp = '%s\n%s' % (msg, span[0])
+    now = datetime.now()
+    if date < now:
+        await m.finish('似乎是过去的时间，未录入')
+    elif date - datetime.now() <= REMIND_DELTA * 1.5:
+        # 若事件发生时间足够近，则准点提醒
+        await m.send('【{}】{}\n事项已录入，将准点提醒'.format(msg, date_str))
+        run_date = date
+    else:
+        await m.send('【{}】{}\n事项已录入，将提前半小时提醒'.format(msg, date_str))
+        run_date = date + REMIND_DELTA
+
     job = scheduler.add_job(
         callback,
         trigger='date',
         name=msg,
         args=[msg, e.get_user_id()],
-        run_date=date + REMIND_DELTA,
+        run_date=run_date,
     )
     state['job_id'] = job.id
     state['date'] = date
-    await m.send(
-        '【{}】{}\n事项已录入，将提前半小时提醒'.format(
-            msg, date.strftime('%m-%d %H:%M')
-        )
-    )
 
 
 @m.got('before')
@@ -94,7 +100,19 @@ async def remind(state: T_State, msg=Arg('before')):
         await m.finish('了解，那么将提前到 {} 进行提醒'.format(new_date.strftime(r'%m-%d %H:%M')))
 
 
+m = on_command('memo clear', priority=3)
+
+@m.got('sure', '确定吗？这是不可逆的 [y/N]')
+async def clear(sure=Arg('sure')):
+    if str(sure).lower() != 'y':
+        await m.finish('（什么都没做）')
+    else:
+        scheduler.remove_all_jobs()
+        await m.finish('清理完毕')
+
+
 m = on_command('memo', priority=5)
+
 
 @m.handle()
 async def memo():
@@ -107,15 +125,3 @@ async def memo():
         for job in sorted(jobs, key=lambda j: j.next_run_time):
             msg += '\n%s\n · %s' % (job.next_run_time.strftime(r'%m-%d %H:%M'), job.name)
         await m.send(msg)
-
-
-m = on_command('memo clear', priority=5)
-
-@m.got('sure', '确定吗？这是不可逆的 [y/N]')
-async def clear(sure=Arg('sure')):
-    if str(sure).lower() != 'y':
-        await m.finish('（什么都没做）')
-    else:
-        scheduler.remove_all_jobs()
-        await m.finish('清理完毕')
-
