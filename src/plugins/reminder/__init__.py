@@ -26,7 +26,7 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-REMIND_DELTA = timedelta(minutes=-30)
+REMIND_DELTA = timedelta(minutes=30)
 
 async def callback(msg, user_id):
     bot = get_bot()
@@ -63,13 +63,13 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
     now = datetime.now()
     if date < now:
         await m.finish('似乎是过去的时间，未录入')
-    elif date - datetime.now() <= REMIND_DELTA * 1.5:
+    elif date - now <= REMIND_DELTA * 1.5:
         # 若事件发生时间足够近，则准点提醒
         await m.send('【{}】{}\n事项已录入，将准点提醒'.format(msg, date_str))
         run_date = date
     else:
         await m.send('【{}】{}\n事项已录入，将提前半小时提醒'.format(msg, date_str))
-        run_date = date + REMIND_DELTA
+        run_date = date - REMIND_DELTA
 
     job = scheduler.add_job(
         callback,
@@ -100,7 +100,7 @@ async def remind(state: T_State, msg=Arg('before')):
         await m.finish('了解，那么将提前到 {} 进行提醒'.format(new_date.strftime(r'%m-%d %H:%M')))
 
 
-m = on_command('memo clear', priority=3)
+m = on_command('memo clear', priority=3, block=False)
 
 @m.got('sure', '确定吗？这是不可逆的 [y/N]')
 async def clear(sure=Arg('sure')):
@@ -112,7 +112,6 @@ async def clear(sure=Arg('sure')):
 
 
 m = on_command('memo', priority=5)
-
 
 @m.handle()
 async def memo():
