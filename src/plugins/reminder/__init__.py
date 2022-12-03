@@ -1,3 +1,4 @@
+# TODO blur 时间处理，数据存储
 import time
 from datetime import datetime, timedelta
 
@@ -19,6 +20,8 @@ __plugin_meta__ = PluginMetadata(
         录入事项
     memo
         列出未来事项
+    memo clear
+        清空事项
     '''
 )
 
