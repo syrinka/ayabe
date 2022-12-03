@@ -76,7 +76,7 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
     job = scheduler.add_job(
         callback,
         trigger='date',
-        name='\x00'.join(date, desc), # 用于获取事件真实时间
+        name='\x00'.join([date, desc]), # 用于获取事件真实时间
         args=[desc, date_str, e.get_user_id()],
         run_date=run_date,
     )
