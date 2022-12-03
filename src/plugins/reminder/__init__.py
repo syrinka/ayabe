@@ -105,3 +105,14 @@ async def memo():
             msg += '\n%s\n · %s' % (job.next_run_time.strftime(r'%m-%d %H:%M'), job.name)
         await m.send(msg)
 
+
+m = on_command('memo clear', priority=5)
+
+@m.got('sure', '确定吗？这是不可逆的 [y/N]')
+async def clear(sure=Arg('sure')):
+    if str(sure).lower() != 'y':
+        await m.finish('（什么都没做）')
+    else:
+        scheduler.remove_all_jobs()
+        await m.finish('清理完毕')
+
