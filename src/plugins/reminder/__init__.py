@@ -29,8 +29,9 @@ __plugin_meta__ = PluginMetadata(
 driver = get_driver()
 REMIND_DELTA = timedelta(minutes=30)
 
-async def callback(msg, user_id):
+async def callback(desc, date_str, user_id):
     bot = get_bot()
+    msg = '予定事项提醒，请留意\n【%s】%s' % (desc, date_str)
     await bot.send_msg(message=msg, user_id=user_id)
 
 
@@ -58,7 +59,7 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
     date = datetime.strptime(span[0], r'%Y-%m-%d %H:%M:%S')
 
     offset = result['offset']
-    msg = (msg[:offset[0]] + msg[offset[1]:]).strip(' \r\n\t，。,.、')
+    desc = (msg[:offset[0]] + msg[offset[1]:]).strip(' \r\n\t，。,.、')
     date_str = date.strftime('%m-%d %H:%M')
 
     now = datetime.now()
@@ -66,17 +67,17 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
         await m.finish('似乎是过去的时间，未录入')
     elif date - now <= REMIND_DELTA * 1.5:
         # 若事件发生时间足够近，则准点提醒
-        await m.send('【{}】{}\n事项已录入，将准点提醒'.format(msg, date_str))
+        await m.send('【{}】{}\n事项已录入，将准点提醒'.format(desc, date_str))
         run_date = date
     else:
-        await m.send('【{}】{}\n事项已录入，将提前半小时提醒'.format(msg, date_str))
+        await m.send('【{}】{}\n事项已录入，将提前半小时提醒'.format(desc, date_str))
         run_date = date - REMIND_DELTA
 
     job = scheduler.add_job(
         callback,
         trigger='date',
-        name=msg,
-        args=[msg, e.get_user_id()],
+        name=desc,
+        args=[desc, date_str, e.get_user_id()],
         run_date=run_date,
     )
     state['job_id'] = job.id
@@ -110,7 +111,7 @@ m = on_command(('memo', 'clear'), priority=3)
 @m.got('sure', '确定吗？这是不可逆的 [y/N]')
 async def clear(sure=Arg('sure')):
     if str(sure).lower() != 'y':
-        await m.finish('（什么都没做）')
+        await m.finish('（什么都没有做）')
     else:
         scheduler.remove_all_jobs()
         await m.finish('清理完毕')
@@ -125,7 +126,7 @@ async def memo():
     if not jobs:
         await m.send('已经没有计划事项了')
     else:
-        msg = '当前尚有以下的事项：'
+        msg = '目前有以下的事项：'
         for job in sorted(jobs, key=lambda j: j.next_run_time):
             msg += '\n%s\n · %s' % (job.next_run_time.strftime(r'%m-%d %H:%M'), job.name)
         await m.send(msg)
