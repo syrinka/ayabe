@@ -2,7 +2,7 @@
 import time
 from datetime import datetime, timedelta
 
-from nonebot import on_command, require, get_bot
+from nonebot import on_command, require, get_bot, get_driver
 from nonebot.log import logger
 from nonebot.params import CommandArg, Event, Arg, T_State
 from nonebot.plugin import PluginMetadata
@@ -26,6 +26,7 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
+driver = get_driver()
 REMIND_DELTA = timedelta(minutes=30)
 
 async def callback(msg, user_id):
@@ -84,6 +85,10 @@ async def remind(state: T_State, e: Event, msg=CommandArg()):
 
 @m.got('before')
 async def remind(state: T_State, msg=Arg('before')):
+    msg = str(msg)
+    if msg[0] in driver.config.command_start:
+        return
+
     try:
         result = extract_time(str(msg))[0]
     except IndexError:
@@ -100,7 +105,7 @@ async def remind(state: T_State, msg=Arg('before')):
         await m.finish('了解，那么将提前到 {} 进行提醒'.format(new_date.strftime(r'%m-%d %H:%M')))
 
 
-m = on_command('memo clear', priority=3, block=False)
+m = on_command(('memo', 'clear'), priority=3)
 
 @m.got('sure', '确定吗？这是不可逆的 [y/N]')
 async def clear(sure=Arg('sure')):
@@ -111,7 +116,7 @@ async def clear(sure=Arg('sure')):
         await m.finish('清理完毕')
 
 
-m = on_command('memo', priority=5)
+m = on_command('memo', priority=3)
 
 @m.handle()
 async def memo():
