@@ -26,15 +26,13 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-last_added = None
-
-
 driver = get_driver()
 REMIND_DELTA = timedelta(minutes=30)
+last_job = None
 
-async def callback(desc, date_str, user_id):
+async def callback(desc, date, user_id, **kwargs):
     bot = get_bot()
-    msg = '予定事项提醒，请留意\n【%s】%s' % (desc, date_str)
+    msg = '予定事项提醒，请留意\n【%s】%s' % (desc, date.strftime(r'%m-%d %H:%M'))
     await bot.send_msg(message=msg, user_id=user_id)
 
 
@@ -63,36 +61,31 @@ async def remind(e: Event, msg=CommandArg()):
 
     offset = result['offset']
     desc = (msg[:offset[0]] + msg[offset[1]:]).strip(' \r\n\t，。,.、')
-    date_str = date.strftime('%m-%d %H:%M')
 
-    now = datetime.now()
-    if date < now:
-        await m.finish('似乎是过去的时间，未录入')
-    elif date - now <= REMIND_DELTA * 1.5:
-        # 若事件发生时间足够近，则准点提醒
-        await m.send('【{}】{}\n事项已录入，将准点提醒'.format(desc, date_str))
-        run_date = date
-    else:
-        await m.send('【{}】{}\n事项已录入，将提前半小时提醒'.format(desc, date_str))
-        run_date = date - REMIND_DELTA
+    await m.send('【{}】{}\n事项已录入，将准时提醒'.format(
+        desc, date.strftime('%m-%d %H:%M')
+    ))
 
-    job = scheduler.add_job(
+    global last_job
+    last_job = scheduler.add_job(
         callback,
         trigger='date',
-        name='\x00'.join([date_str, desc]), # 用于获取事件真实时间
-        args=[desc, date_str, e.get_user_id()],
-        run_date=run_date,
+        kwargs={
+            'desc': desc,
+            'date': date,
+            'user_id': e.get_user_id()
+        },
+        run_date=date,
     )
-    global last_added
-    last_added = (job.id, date)
 
 
 m = on_command('ahead')
 
 @m.handle()
 async def ahead(msg=CommandArg()):
-    if last_added is None:
-        return
+    global last_job
+    if last_job is None:
+        await m.finish('没有上一条事项')
 
     msg = str(msg)
     try:
@@ -102,13 +95,15 @@ async def ahead(msg=CommandArg()):
         return
 
     if result['type'] != 'time_delta':
-        await m.finish('意义不明，若希望更改提醒时间，请描述一个时间差')
+        await m.finish('意义不明，若希望变更提醒时间，请描述一个时间差')
     else:
-        job_id, date = last_added
+        job = last_job
         # hour -> hours
         delta = timedelta(**{k+'s': v for k, v in result['detail']['time'].items()})
-        new_date = date - delta
-        scheduler.reschedule_job(job_id, run_date=new_date)
+        new_date = job.kwargs['date'] - delta
+        if datetime.now() > new_date:
+            await m.finish('指定了过去的时间，提醒时间未变更')
+        scheduler.reschedule_job(job.id, run_date=new_date)
         await m.finish('了解，那么将提前到 {} 进行提醒'.format(new_date.strftime(r'%m-%d %H:%M')))
 
 
@@ -130,12 +125,14 @@ async def memo():
     jobs = scheduler.get_jobs()
 
     if not jobs:
-        await m.send('已经没有计划事项了')
+        await m.send('暂无予定事项，辛苦了')
     else:
-        msg = '目前有以下的事项：'
+        msg = '目前的予定事项：'
 
-        # name = date_str + '\x00' + desc
-        for job in sorted(jobs, key=lambda j: j.name):
-            date_str, desc = job.name.split('\x00')
-            msg += '\n%s\n · %s' % (date_str, desc)
+        for job in sorted(jobs, key=lambda j: j.kwargs['date']):
+            kw = job['kwargs']
+            msg += '\n%s\n · %s' % (
+                kw['date'].strftime(r'%m-%d %H:%M'),
+                kw['desc']
+            )
         await m.send(msg)
