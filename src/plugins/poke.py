@@ -9,7 +9,7 @@ m.__doc__ = '戳一戳'
 
 @m.handle()
 async def nope(e: Event):
-    msg = 'ちょっと'
+    msg = '……唔'
     if isinstance(e, PokeNotifyEvent):
         if e.group_id is None:
             bot = get_bot()
