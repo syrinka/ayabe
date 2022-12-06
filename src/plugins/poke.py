@@ -1,9 +1,9 @@
-from nonebot import on_notice
-from nonebot import get_bot
+from nonebot import on_notice, get_bot
+from nonebot.rule import to_me
 from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11.event import PokeNotifyEvent
 
-m = on_notice()
+m = on_notice(to_me)
 m.__help_name__ = '*poke'
 m.__doc__ = '戳一戳'
 
