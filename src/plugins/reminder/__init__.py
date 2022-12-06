@@ -130,7 +130,7 @@ async def memo():
         msg = '目前的予定事项：'
 
         for job in sorted(jobs, key=lambda j: j.kwargs['date']):
-            kw = job['kwargs']
+            kw = job.kwargs
             msg += '\n%s\n · %s' % (
                 kw['date'].strftime(r'%m-%d %H:%M'),
                 kw['desc']
