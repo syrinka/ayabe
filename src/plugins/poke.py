@@ -1,18 +1,20 @@
-from nonebot import on_notice, get_bot
-from nonebot.rule import to_me
-from nonebot.adapters import Event
+from random import randint
+
+from nonebot import on_notice
+from nonebot.rule import is_type
+from nonebot.params import EventParam
 from nonebot.adapters.onebot.v11.event import PokeNotifyEvent
 
-m = on_notice(to_me)
+m = on_notice(is_type(PokeNotifyEvent))
 m.__help_name__ = '*poke'
 m.__doc__ = '戳一戳'
 
+
+selects = ('……唔。', '怎么了？', '哇……？！')
+
 @m.handle()
-async def nope(e: Event):
-    msg = '……唔'
-    if isinstance(e, PokeNotifyEvent):
-        if e.group_id is None:
-            bot = get_bot()
-            await bot.send_msg(message=msg, user_id=e.user_id)
-        else:
-            await m.send(msg)
+async def nope(e = EventParam()):
+    msg = selects[randint(0, len(selects)-1)]
+    # 仅在戳自己时
+    if e.target_id == e.self_id:
+        await m.send(message=msg)
