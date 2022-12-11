@@ -27,7 +27,6 @@ __plugin_meta__ = PluginMetadata(
 
 
 driver = get_driver()
-REMIND_DELTA = timedelta(minutes=30)
 last_job = None
 
 async def callback(desc, date, user_id, **kwargs):
