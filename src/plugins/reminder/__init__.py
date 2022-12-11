@@ -29,6 +29,9 @@ __plugin_meta__ = PluginMetadata(
 driver = get_driver()
 last_job = None
 
+scheduler.add_jobstore('memory', 'reminder')
+
+
 async def callback(desc, date, user_id, **kwargs):
     bot = get_bot()
     msg = '予定事项提醒，请留意\n【%s】%s' % (desc, date.strftime(r'%m-%d %H:%M'))
@@ -68,6 +71,7 @@ async def remind(e: Event, msg=CommandArg()):
     global last_job
     last_job = scheduler.add_job(
         callback,
+        jobstore='reminder',
         trigger='date',
         kwargs={
             'desc': desc,
@@ -102,7 +106,7 @@ async def ahead(msg=CommandArg()):
         new_date = job.kwargs['date'] - delta
         if datetime.now() > new_date:
             await m.finish('指定了过去的时间，提醒时间未变更')
-        scheduler.reschedule_job(job.id, run_date=new_date)
+        scheduler.reschedule_job(job.id, jobstore='reminder', run_date=new_date)
         await m.finish('了解，那么将提前到 {} 进行提醒'.format(new_date.strftime(r'%m-%d %H:%M')))
 
 
@@ -113,7 +117,7 @@ async def clear(sure=Arg('sure')):
     if str(sure).lower() != 'y':
         await m.finish('（什么都没有做）')
     else:
-        scheduler.remove_all_jobs()
+        scheduler.remove_all_jobs(jobstore='reminder')
         await m.finish('清理完毕')
 
 
@@ -121,7 +125,7 @@ m = on_command('memo')
 
 @m.handle()
 async def memo():
-    jobs = scheduler.get_jobs()
+    jobs = scheduler.get_jobs('reminder')
 
     if not jobs:
         await m.send('暂无予定事项，辛苦了')
