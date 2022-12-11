@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
 
 
@@ -16,14 +16,29 @@ class Entry(BaseModel):
     feed: Feed
     title: str
     url: str
-
+    
+    def __str__(self):
+        return f'· {self.title}'
 
 class Entries(BaseModel):
-    total: int
-    entries: List[Entry]
+    total: int = 0
+    entries: List[Entry] = Field(default_factory=list)
 
     def __add__(self, other: "Entries"):
         return Entries(
             self.total + other.total,
             self.entries + other.entries
         )
+
+    def __bool__(self):
+        return bool(self.total)
+
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            crop = self.entries[item]
+            return Entries(len(crop), crop)
+        else:
+            return self.entries[item]
+
+    def __str__(self):
+        return '\n'.join(str(e) for e in self.entries)
