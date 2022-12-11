@@ -9,17 +9,18 @@ readme = "README.md"
 python = "^3.9"
 openai = "^0.25.0"
 nonebot2 = "^2.0.0rc2"
-nonebot-plugin-apscheduler = "^0.2.0"
+nonebot-plugin-sentry = "^0.2.2"
 nonebot-plugin-report = "^1.2.1"
 nonebot-plugin-help = "^0.3.1"
 nonebot-plugin-gocqhttp = "^0.6.3"
+nonebot-plugin-apscheduler = "^0.2.0"
 nonebot-adapter-onebot = "^2.1.5"
 nb-cli = "^0.6.7"
 
 [tool.poetry.dev-dependencies]
 
 [tool.nonebot]
-plugins = ["nonebot_plugin_gocqhttp", "nonebot_plugin_help", "nonebot_plugin_report"]
+plugins = ["nonebot_plugin_gocqhttp", "nonebot_plugin_help", "nonebot_plugin_report", "nonebot_plugin_sentry"]
 plugin_dirs = ["src/plugins"]
 
 [build-system]
