@@ -14,7 +14,7 @@ selects = ('……唔。', '怎么了？', '哇……？！')
 
 @m.handle()
 async def nope(e = EventParam()):
-    msg = selects[randint(0, len(selects)-1)]
     # 仅在戳自己时
     if e.target_id == e.self_id:
+        msg = selects[randint(0, len(selects)-1)]
         await m.send(message=msg)
