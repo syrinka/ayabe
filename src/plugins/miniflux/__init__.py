@@ -52,7 +52,7 @@ async def callback():
     else:
         excess = 0
 
-    msg = f'收到了 Miniflux 方面的新文章：\n{str(entries)}'
+    msg = f'收到 Miniflux 方面的新文章：\n{str(entries)}'
     if excess:
         msg += f'\n...(+{excess})'
 
