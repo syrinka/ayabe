@@ -1,8 +1,8 @@
 from typing import List, Optional
-from pydantic import BaseSettings, Extra
+from pydantic import BaseModel
 
 
-class Config(BaseSettings, extra=Extra.ignore):
+class Config(BaseModel):
     miniflux_api_endpoint: str
     miniflux_api_token: str
     miniflux_check_cron: str = '0 * * * *'
