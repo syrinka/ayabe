@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 openai = "^0.25.0"
-nonebot2 = "^2.0.0rc2"
+nonebot2 = {extras = ["fastapi"], version = "^2.0.0rc3"}
 nonebot-plugin-sentry = "^0.2.2"
 nonebot-plugin-report = "^1.2.1"
 nonebot-plugin-help = "^0.3.1"
